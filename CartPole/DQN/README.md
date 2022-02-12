@@ -1,4 +1,8 @@
 # DQN
 
 ## Pseudocode
-![pseudocode](DQN_pseudocode.png)
+![pseudocode](assets/pseudocode.png)
+
+
+## Result
+![result](assets/result.png)
