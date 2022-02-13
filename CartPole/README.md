@@ -2,9 +2,7 @@
 
 ## Overview
 
-<video width="100%" height="100%" controls="controls">
-  <source src="./PPO/assets/render.mp4" type="video/mp4">
-</video>
+https://user-images.githubusercontent.com/84180121/153751593-c6cb436b-d515-40ba-bc7c-c6db731f9160.mp4
 
 ## Speicification
 
