@@ -59,8 +59,9 @@ class DQN(nn.Module):
 
 def deep_q_learning(
     gamma: float = 0.99,
-    num_episodes: int = 1000,
-    batch_size: int = 32
+    num_episodes: int = 5000,
+    batch_size: int = 64,
+    target_update_interval: int = 20
 ):
     env = gym.make("CartPole-v1")
 
@@ -71,7 +72,7 @@ def deep_q_learning(
     target_policy.load_state_dict(policy.state_dict())
     target_policy.eval()
 
-    optimizer = optim.RMSprop(policy.parameters(), lr=5e-4)
+    optimizer = optim.Adam(policy.parameters(), lr=5e-4)
 
     total_timesteps = 0
     durations = []
@@ -84,7 +85,7 @@ def deep_q_learning(
             replay_memory.append(
                 state=state,
                 action=action,
-                reward=reward,
+                reward=reward / 100,
                 next_state=next_state,
                 done=done
             )
@@ -110,7 +111,7 @@ def deep_q_learning(
             optimizer.step()
 
             total_timesteps += 1
-            if total_timesteps % 20 == 0:
+            if total_timesteps % target_update_interval == 0:
                 target_policy.load_state_dict(policy.state_dict())
 
         durations.append(t)
@@ -127,13 +128,20 @@ def deep_q_learning(
 
 
 if __name__ == "__main__":
-    policy, durations = deep_q_learning(gamma=0.99, num_episodes=5000, batch_size=32)
+    policy, durations = deep_q_learning(
+        gamma=0.99,
+        num_episodes=5000,
+        batch_size=64,
+        target_update_interval=20
+    )
+    policy.eval()
 
     from gym.wrappers import Monitor
 
     env = Monitor(gym.make("CartPole-v1"), directory="./output", force=True)
     state = env.reset()
-    for t in count(1):
+    done = False
+    while not done:
         env.render()
         action = policy.select_action(state)
         state, _, done, _ = env.step(action)
