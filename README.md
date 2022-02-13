@@ -9,4 +9,11 @@ generalization of algorithms is ignored and thus all algorithms are bound to eac
 
 ## Environments
 
+Each directory contains:
+- Overview and Specifications of the environment
+- Algorithms*
+
+`*`: Includes pseudocode, code and result
+
+### Available
 - [CartPole-v1](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole)
