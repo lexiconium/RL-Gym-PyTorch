@@ -1,5 +1,6 @@
 # PPO
 
+Proximal Policy Optimization Algorithm proposed by OpenAI [1].
 
 ## Pseudocode
 ![pseudocode](assets/pseudocode.png)
