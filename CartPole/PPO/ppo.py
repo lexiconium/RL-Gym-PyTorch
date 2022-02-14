@@ -1,5 +1,4 @@
-from collections import deque, namedtuple
-import random
+from collections import namedtuple
 from typing import Optional
 
 import gym
