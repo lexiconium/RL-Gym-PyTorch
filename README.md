@@ -1,11 +1,8 @@
 # RL-Gym-PyTorch
 
-The purpose of this repository is to implement Reinforcement Learning algorithms in PyTorch
-and test those with various OpenAI Gym environments.
+The purpose of this repository is to implement Reinforcement Learning algorithms in PyTorch and test them on a variety of OpenAI Gym environments.
 
-One of the purposes was to show the entire structure of the algorithm as clearly as possible (at least to my perspective)
-thus all implementations are bound to each specific environment with minimum generalization.
-
+All implementations are specific to each environment with minimum generalization so that the entire structure of the algorithm can be seen as clearly as possible.
 
 ## Environments
 
@@ -17,3 +14,4 @@ Each directory contains:
 
 ### Available
 - [CartPole-v1](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole)
+- [LunarLander-v2](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander)
