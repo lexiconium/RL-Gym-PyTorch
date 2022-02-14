@@ -16,8 +16,16 @@ possible. Fuel is infinite, so an agent can learn to fly and then land on its fi
 
 ### Action Space
 
+#### Discrete
+
 There are four discrete actions available: do nothing, fire left orientation engine, fire main engine, fire right
 orientation engine.
+
+#### Continuous
+
+Action is two floats [**main engine**, **left-right engines**]. \
+**Main engine**: -1..0 off, 0..+1 throttle from 50% to 100% power. Engine can't work with less than 50% power. \
+**left-right engines**:  -1.0..-0.5 fire left engine, +0.5..+1.0 fire right engine, -0.5..0.5 off
 
 ### Observation Space
 
@@ -53,6 +61,6 @@ The episode finishes if:
 
 ## Reference
 
-[1] https://gym.openai.com/envs/LunarLander-v2/ \
-[2] https://gym.openai.com/envs/LunarLanderContinuous-v2/ \
+[1] https://gym.openai.com/envs/LunarLander-v2 \
+[2] https://gym.openai.com/envs/LunarLanderContinuous-v2 \
 [3] https://github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py

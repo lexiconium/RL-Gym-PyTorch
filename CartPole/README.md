@@ -23,7 +23,7 @@ push the cart with a fixed amount of force:
 | 0   | Push cart to the left  |
 | 1   | Push cart to the right |
 
-**Note:** The amount the velocity is reduced or increased is not fixed as it depends on the angle the pole is pointing. This
+**Note**: The amount the velocity is reduced or increased is not fixed as it depends on the angle the pole is pointing. This
 is because the center of gravity of the pole increases the amount of energy needed to move the cart underneath it
 
 ### Observation Space
@@ -37,7 +37,7 @@ The observation is a `ndarray` with shape `(4,)` where the elements correspond t
 | 2   | Pole Angle            | ~ -0.418 rad (-24°)** | ~ 0.418 rad (24°)** |
 | 3   | Pole Angular Velocity | -Inf                 | Inf                |
 
-**Note:** above denotes the ranges of possible observations for each element, but in two cases this range exceeds the
+**Note**: above denotes the ranges of possible observations for each element, but in two cases this range exceeds the
 range of possible values in an un-terminated episode:
 
 - `*`: the cart x-position can be observed between `(-4.8, 4.8)`, but an episode terminates if the cart leaves the
@@ -63,5 +63,5 @@ The episode terminates of one of the following occurs:
 
 ## Reference
 
-[1] https://gym.openai.com/envs/CartPole-v1/ \
+[1] https://gym.openai.com/envs/CartPole-v1 \
 [2] https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
