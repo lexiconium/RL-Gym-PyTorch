@@ -63,12 +63,12 @@ class ActorCritic(nn.Module):
         super(ActorCritic, self).__init__()
 
         self.sync = nn.Sequential(
-            nn.Linear(4, 64),
+            nn.Linear(8, 64),
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU()
         )
-        self.actor = nn.Linear(64, 2)
+        self.actor = nn.Linear(64, 4)
         self.critic = nn.Linear(64, 1)
 
     def forward(self, state: torch.Tensor):
@@ -113,7 +113,7 @@ def proximal_policy_optimization(
     num_iterations: int = 100,
     batch_size: int = 64
 ):
-    env = gym.make("CartPole-v1")
+    env = gym.make("LunarLander-v2")
 
     rollout_buffer = RolloutBuffer()
     policy = ActorCritic()
@@ -121,8 +121,8 @@ def proximal_policy_optimization(
     optimizer = optim.Adam(policy.parameters(), lr=5e-4)
 
     state = env.reset()
-    duration = 0
-    durations = []
+    acc_reward = 0
+    rewards = []
     for iteration in range(num_iterations):
         for _ in range(horizon):
             with torch.no_grad():
@@ -138,12 +138,12 @@ def proximal_policy_optimization(
             )
 
             state = next_state
-            duration += 1
+            acc_reward += reward
 
             if done:
                 state = env.reset()
-                durations.append(duration)
-                duration = 0
+                rewards.append(acc_reward)
+                acc_reward = 0
 
         next_value = policy.estimate(state).numpy()
         rollout_buffer.calc_advantage_and_target(
@@ -180,30 +180,30 @@ def proximal_policy_optimization(
         if iteration % 10 == 0:
             print(
                 f"iteration: {iteration}\n"
-                f"avg. reward: {np.mean(durations[-100:])}\n"
+                f"avg. reward: {np.mean(rewards[-100:])}\n"
             )
 
     env.close()
 
-    return policy, durations
+    return policy, rewards
 
 
 if __name__ == "__main__":
-    policy, durations = proximal_policy_optimization(
+    policy, rewards = proximal_policy_optimization(
         gamma=0.99,
         lambda_gae=0.95,
         clip_range=0.2,
         c_vf=1,
         c_entropy=0.01,
         horizon=2048,
-        num_iterations=150,
+        num_iterations=1000,
         batch_size=64
     )
     policy.eval()
 
     from gym.wrappers import Monitor
 
-    env = Monitor(gym.make("CartPole-v1"), directory="./output", force=True)
+    env = Monitor(gym.make("LunarLander-v2"), directory="./output", force=True)
     state = env.reset()
     done = False
     while not done:

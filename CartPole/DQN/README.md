@@ -4,7 +4,7 @@ Q-learning algorithm proposed by DeepMind Technologies [1].
 
 ## Pseudocode
 
-![pseudocode](assets/pseudocode.png)
+![pseudocode](../../assets/dqn_pseudocode.png)
 
 ## Result
 

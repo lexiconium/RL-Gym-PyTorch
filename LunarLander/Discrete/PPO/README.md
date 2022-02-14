@@ -3,7 +3,7 @@
 Proximal Policy Optimization Algorithm proposed by OpenAI [1].
 
 ## Pseudocode
-![pseudocode](../../assets/ppo_pseudocode.png)
+![pseudocode](../../../assets/ppo_pseudocode.png)
 
 
 ## Result
