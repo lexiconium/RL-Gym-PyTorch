@@ -4,6 +4,8 @@
 
 https://user-images.githubusercontent.com/84180121/153878535-88667431-d0fb-4e53-9406-2deafb6dcffe.mp4
 
+Trained on [PPO](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander/Discrete/PPO).
+
 ## Speicification [3]
 
 ### Description
