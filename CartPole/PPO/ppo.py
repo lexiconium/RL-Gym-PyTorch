@@ -121,8 +121,8 @@ def proximal_policy_optimization(
     optimizer = optim.Adam(policy.parameters(), lr=5e-4)
 
     state = env.reset()
-    duration = 0
-    durations = []
+    acc_reward = 0
+    acc_rewards = []
     for iteration in range(num_iterations):
         for _ in range(horizon):
             with torch.no_grad():
@@ -138,12 +138,12 @@ def proximal_policy_optimization(
             )
 
             state = next_state
-            duration += 1
+            acc_reward += 1
 
             if done:
                 state = env.reset()
-                durations.append(duration)
-                duration = 0
+                acc_rewards.append(acc_reward)
+                acc_reward = 0
 
         next_value = policy.estimate(state).numpy()
         rollout_buffer.calc_advantage_and_target(
@@ -180,16 +180,16 @@ def proximal_policy_optimization(
         if iteration % 10 == 0:
             print(
                 f"iteration: {iteration}\n"
-                f"avg. reward: {np.mean(durations[-100:])}\n"
+                f"avg. reward: {np.mean(acc_rewards[-100:])}\n"
             )
 
     env.close()
 
-    return policy, durations
+    return policy, acc_rewards
 
 
 if __name__ == "__main__":
-    policy, durations = proximal_policy_optimization(
+    policy, acc_rewards = proximal_policy_optimization(
         gamma=0.99,
         lambda_gae=0.95,
         clip_range=0.2,
