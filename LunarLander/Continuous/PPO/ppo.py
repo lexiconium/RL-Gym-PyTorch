@@ -5,7 +5,7 @@ import gym
 import numpy as np
 import torch
 from torch import nn, no_grad, optim
-from torch.distributions import Categorical
+from torch.distributions import Normal
 from torch.nn import functional as F
 
 
@@ -68,20 +68,24 @@ class ActorCritic(nn.Module):
             nn.Linear(64, 64),
             nn.ReLU()
         )
-        self.actor = nn.Linear(64, 4)
+        self.actor_mean = nn.Linear(64, 2)
+        self.actor_std = nn.Sequential(
+            nn.Linear(64, 2),
+            nn.Softplus()
+        )
         self.critic = nn.Linear(64, 1)
 
     def forward(self, state: torch.Tensor):
         latent = self.sync(state)
-        return self.actor(latent), self.critic(latent)
+        return self.actor_mean(latent), self.actor_std(latent), self.critic(latent)
 
     @to_torch
     def evaluate(self, state: torch.Tensor, action: Optional[torch.Tensor] = None):
-        logits, value = self(state)
-        distribution = Categorical(logits=logits)
+        actor_mean, actor_std, value = self(state)
+        distribution = Normal(loc=actor_mean, scale=actor_std)
 
         if action is None:
-            action = distribution.sample()
+            action = distribution.rsample()
             log_prob = distribution.log_prob(action)
             return value, action, log_prob
 
@@ -93,8 +97,7 @@ class ActorCritic(nn.Module):
     @to_torch
     def select_action(self, state: torch.Tensor):
         latent = self.sync(state)
-        logits = self.actor(latent)
-        return logits.argmax(dim=-1)
+        return self.actor_mean(latent)
 
     @no_grad()
     @to_torch
@@ -113,7 +116,7 @@ def proximal_policy_optimization(
     num_iterations: int = 100,
     batch_size: int = 64
 ):
-    env = gym.make("LunarLander-v2")
+    env = gym.make("LunarLanderContinuous-v2")
 
     rollout_buffer = RolloutBuffer()
     policy = ActorCritic()
@@ -122,12 +125,12 @@ def proximal_policy_optimization(
 
     state = env.reset()
     acc_reward = 0
-    rewards = []
+    acc_rewards = []
     for iteration in range(num_iterations):
         for _ in range(horizon):
             with torch.no_grad():
                 value, action, log_prob = policy.evaluate(state)
-            next_state, reward, done, _ = env.step(action.item())
+            next_state, reward, done, _ = env.step(action.numpy())
             rollout_buffer.append(
                 state=state,
                 value=value,
@@ -142,7 +145,7 @@ def proximal_policy_optimization(
 
             if done:
                 state = env.reset()
-                rewards.append(acc_reward)
+                acc_rewards.append(acc_reward)
                 acc_reward = 0
 
         next_value = policy.estimate(state).numpy()
@@ -155,10 +158,10 @@ def proximal_policy_optimization(
         for batch in rollout_buffer.rollout(batch_size):
             values, log_probs, entropy = policy.evaluate(batch.state, batch.action)
 
-            old_log_probs = torch.as_tensor(batch.log_prob).flatten().float()
+            old_log_probs = torch.as_tensor(batch.log_prob).float()
             ratio = torch.exp(log_probs - old_log_probs)
 
-            advantages = torch.as_tensor(batch.advantage).flatten().float()
+            advantages = torch.as_tensor(batch.advantage).float()
             advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
             clip_loss = torch.min(
                 advantages * ratio,
@@ -180,16 +183,16 @@ def proximal_policy_optimization(
         if iteration % 10 == 0:
             print(
                 f"iteration: {iteration}\n"
-                f"avg. reward: {np.mean(rewards[-100:])}\n"
+                f"avg. reward: {np.mean(acc_rewards[-100:])}\n"
             )
 
     env.close()
 
-    return policy, rewards
+    return policy, acc_rewards
 
 
 if __name__ == "__main__":
-    policy, rewards = proximal_policy_optimization(
+    policy, acc_rewards = proximal_policy_optimization(
         gamma=0.99,
         lambda_gae=0.95,
         clip_range=0.2,
@@ -203,13 +206,13 @@ if __name__ == "__main__":
 
     from gym.wrappers import Monitor
 
-    env = Monitor(gym.make("LunarLander-v2"), directory="./output", force=True)
+    env = Monitor(gym.make("LunarLanderContinuous-v2"), directory="./output", force=True)
     state = env.reset()
     done = False
     while not done:
         env.render()
         action = policy.select_action(state)
-        state, _, done, _ = env.step(action.item())
+        state, _, done, _ = env.step(action.numpy())
 
         if done:
             env.close()
