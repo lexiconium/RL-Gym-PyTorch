@@ -5,7 +5,7 @@ import gym
 import numpy as np
 import torch
 from torch import nn, no_grad, optim
-from torch.distributions import Categorical
+from torch.distributions import Normal
 from torch.nn import functional as F
 
 
@@ -63,25 +63,29 @@ class ActorCritic(nn.Module):
         super(ActorCritic, self).__init__()
 
         self.sync = nn.Sequential(
-            nn.Linear(4, 64),
+            nn.Linear(8, 64),
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU()
         )
-        self.actor = nn.Linear(64, 2)
+        self.actor_mean = nn.Linear(64, 2)
+        self.actor_std = nn.Sequential(
+            nn.Linear(64, 2),
+            nn.Softplus()
+        )
         self.critic = nn.Linear(64, 1)
 
     def forward(self, state: torch.Tensor):
         latent = self.sync(state)
-        return self.actor(latent), self.critic(latent)
+        return self.actor_mean(latent), self.actor_std(latent), self.critic(latent)
 
     @to_torch
     def evaluate(self, state: torch.Tensor, action: Optional[torch.Tensor] = None):
-        logits, value = self(state)
-        distribution = Categorical(logits=logits)
+        actor_mean, actor_std, value = self(state)
+        distribution = Normal(loc=actor_mean, scale=actor_std)
 
         if action is None:
-            action = distribution.sample()
+            action = distribution.rsample()
             log_prob = distribution.log_prob(action)
             return value, action, log_prob
 
@@ -93,8 +97,7 @@ class ActorCritic(nn.Module):
     @to_torch
     def select_action(self, state: torch.Tensor):
         latent = self.sync(state)
-        logits = self.actor(latent)
-        return logits.argmax(dim=-1)
+        return self.actor_mean(latent)
 
     @no_grad()
     @to_torch
@@ -113,7 +116,7 @@ def proximal_policy_optimization(
     num_iterations: int = 100,
     batch_size: int = 64
 ):
-    env = gym.make("CartPole-v1")
+    env = gym.make("LunarLanderContinuous-v2")
 
     rollout_buffer = RolloutBuffer()
     policy = ActorCritic()
@@ -127,7 +130,7 @@ def proximal_policy_optimization(
         for _ in range(horizon):
             with torch.no_grad():
                 value, action, log_prob = policy.evaluate(state)
-            next_state, reward, done, _ = env.step(action.item())
+            next_state, reward, done, _ = env.step(action.numpy())
             rollout_buffer.append(
                 state=state,
                 value=value,
@@ -138,7 +141,7 @@ def proximal_policy_optimization(
             )
 
             state = next_state
-            acc_reward += 1
+            acc_reward += reward
 
             if done:
                 state = env.reset()
@@ -155,10 +158,10 @@ def proximal_policy_optimization(
         for batch in rollout_buffer.rollout(batch_size):
             values, log_probs, entropy = policy.evaluate(batch.state, batch.action)
 
-            old_log_probs = torch.as_tensor(batch.log_prob).flatten().float()
+            old_log_probs = torch.as_tensor(batch.log_prob).float()
             ratio = torch.exp(log_probs - old_log_probs)
 
-            advantages = torch.as_tensor(batch.advantage).flatten().float()
+            advantages = torch.as_tensor(batch.advantage).float()
             advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
             clip_loss = torch.min(
                 advantages * ratio,
@@ -196,20 +199,20 @@ if __name__ == "__main__":
         c_vf=1,
         c_entropy=0.01,
         horizon=2048,
-        num_iterations=150,
+        num_iterations=1000,
         batch_size=64
     )
     policy.eval()
 
     from gym.wrappers import Monitor
 
-    env = Monitor(gym.make("CartPole-v1"), directory="./output", force=True)
+    env = Monitor(gym.make("LunarLanderContinuous-v2"), directory="./output", force=True)
     state = env.reset()
     done = False
     while not done:
         env.render()
         action = policy.select_action(state)
-        state, _, done, _ = env.step(action.item())
+        state, _, done, _ = env.step(action.numpy())
 
         if done:
             env.close()

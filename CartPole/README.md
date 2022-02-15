@@ -4,6 +4,8 @@
 
 https://user-images.githubusercontent.com/84180121/153751593-c6cb436b-d515-40ba-bc7c-c6db731f9160.mp4
 
+Trained on [PPO](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole/PPO).
+
 ## Speicification [2]
 
 ### Description

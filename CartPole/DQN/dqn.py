@@ -75,7 +75,7 @@ def deep_q_learning(
     optimizer = optim.Adam(policy.parameters(), lr=5e-4)
 
     total_timesteps = 0
-    durations = []
+    acc_rewards = []
     for episode in range(num_episodes):
         state = env.reset()
         for t in count(1):
@@ -89,6 +89,7 @@ def deep_q_learning(
                 next_state=next_state,
                 done=done
             )
+
             if done:
                 break
             state = next_state
@@ -114,21 +115,21 @@ def deep_q_learning(
             if total_timesteps % target_update_interval == 0:
                 target_policy.load_state_dict(policy.state_dict())
 
-        durations.append(t)
+        acc_rewards.append(t)
         if episode % 100 == 0:
             print(
                 f"episode: {episode}\n"
-                f"avg. reward: {np.mean(durations[-100:])}\n"
+                f"avg. reward: {np.mean(acc_rewards[-100:])}\n"
                 f"exploration coeff.: {epsilon}\n"
             )
 
     env.close()
 
-    return target_policy, durations
+    return target_policy, acc_rewards
 
 
 if __name__ == "__main__":
-    policy, durations = deep_q_learning(
+    policy, acc_rewards = deep_q_learning(
         gamma=0.99,
         num_episodes=5000,
         batch_size=64,
