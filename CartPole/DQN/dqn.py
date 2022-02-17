@@ -39,11 +39,11 @@ class DQN(nn.Module):
         super(DQN, self).__init__()
 
         self.dqn = nn.Sequential(
-            nn.Linear(4, 64),
+            nn.Linear(4, 32),
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(32, 32),
             nn.ReLU(),
-            nn.Linear(64, 2)
+            nn.Linear(32, 2)
         )
 
     @to_torch
@@ -65,21 +65,21 @@ def deep_q_learning(
 ):
     env = gym.make("CartPole-v1")
 
-    replay_memory = ReplayMemory(capacity=50000)
+    replay_memory = ReplayMemory(capacity=100000)
     policy = DQN()
 
     target_policy = DQN()
     target_policy.load_state_dict(policy.state_dict())
     target_policy.eval()
 
-    optimizer = optim.Adam(policy.parameters(), lr=5e-4)
+    optimizer = optim.Adam(policy.parameters(), lr=1e-4)
 
     total_timesteps = 0
     acc_rewards = []
     for episode in range(num_episodes):
         state = env.reset()
         for t in count(1):
-            epsilon = max(1 - 0.9 * (total_timesteps / 50000), 0.1)
+            epsilon = max(1 - 0.9 * (total_timesteps / 50000), 0.01)
             action = target_policy.select_action(state, epsilon)
             next_state, reward, done, _ = env.step(action)
             replay_memory.append(
@@ -94,7 +94,7 @@ def deep_q_learning(
                 break
             state = next_state
 
-            if len(replay_memory) < 10000:
+            if len(replay_memory) < batch_size:
                 continue
 
             transition = replay_memory.sample(batch_size)
@@ -129,12 +129,29 @@ def deep_q_learning(
 
 
 if __name__ == "__main__":
-    policy, acc_rewards = deep_q_learning(
-        gamma=0.99,
-        num_episodes=5000,
-        batch_size=64,
-        target_update_interval=20
-    )
+    # policy, acc_rewards = deep_q_learning(
+    #     gamma=0.99,
+    #     num_episodes=5000,
+    #     batch_size=64,
+    #     target_update_interval=10
+    # )
+
+    data = {}
+
+    for n in range(5):
+        policy, acc_rewards = deep_q_learning(
+            gamma=0.99,
+            num_episodes=5000,
+            batch_size=64,
+            target_update_interval=10
+        )
+        data[n] = acc_rewards
+
+    import json
+
+    with open("rewards.json", "w") as f:
+        json.dump(data, f)
+
     policy.eval()
 
     from gym.wrappers import Monitor
