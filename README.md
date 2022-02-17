@@ -12,6 +12,12 @@ Each directory contains:
 
 `*`: Includes pseudocode, code and result
 
-### Available
+### Availability
 - [CartPole-v1](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole)
+  - [DQN](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole/DQN)
+  - [PPO](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole/PPO)
+- [Pendulum-v0](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Pendulum)
+  - [DDPG](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Pendulum/DDPG)
 - [LunarLander-v2](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander)
+  - [PPO (Continuous)](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander/Continuous/PPO)
+  - [PPO (Discrete)](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander/Discrete/PPO)

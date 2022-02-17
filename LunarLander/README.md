@@ -6,7 +6,7 @@ https://user-images.githubusercontent.com/84180121/153878535-88667431-d0fb-4e53-
 
 Trained on [PPO](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander/Discrete/PPO).
 
-## Speicification [3]
+## Speicifications [3]
 
 ### Description
 
@@ -61,7 +61,7 @@ The episode finishes if:
 > wakes up. Bodies will also wake up if a joint or contact attached to
 > them is destroyed.
 
-## Reference
+## References
 
 [1] https://gym.openai.com/envs/LunarLander-v2 \
 [2] https://gym.openai.com/envs/LunarLanderContinuous-v2 \

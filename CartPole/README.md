@@ -6,7 +6,7 @@ https://user-images.githubusercontent.com/84180121/153751593-c6cb436b-d515-40ba-
 
 Trained on [PPO](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/CartPole/PPO).
 
-## Speicification [2]
+## Speicifications [2]
 
 ### Description
 
@@ -63,7 +63,7 @@ The episode terminates of one of the following occurs:
 2. Cart Position is more than ±2.4 (center of the cart reaches the edge of the display)
 3. Episode length is greater than 500 (200 for v0)
 
-## Reference
+## References
 
 [1] https://gym.openai.com/envs/CartPole-v1 \
 [2] https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
