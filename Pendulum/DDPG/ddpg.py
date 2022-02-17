@@ -184,28 +184,12 @@ def deep_deterministic_policy_gradient(
 
 
 if __name__ == "__main__":
-    # policy, acc_rewards = deep_deterministic_policy_gradient(
-    #     gamma=0.99,
-    #     tau=0.005,
-    #     num_episodes=500,
-    #     batch_size=64
-    # )
-
-    data = {}
-    for n in range(5):
-        policy, acc_rewards = deep_deterministic_policy_gradient(
-            gamma=0.99,
-            tau=0.005,
-            num_episodes=500,
-            batch_size=64
-        )
-        data[n] = acc_rewards
-
-    import json
-
-    with open("rewards.json", "w") as f:
-        json.dump(data, f)
-    policy.eval()
+    policy, acc_rewards = deep_deterministic_policy_gradient(
+        gamma=0.99,
+        tau=0.005,
+        num_episodes=500,
+        batch_size=64
+    )
 
     from gym.wrappers import Monitor
 
