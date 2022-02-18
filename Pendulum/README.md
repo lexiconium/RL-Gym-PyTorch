@@ -4,6 +4,8 @@
 
 https://user-images.githubusercontent.com/84180121/154502432-5556df02-3b15-494d-9ee8-a0da338639ca.mp4
 
+Trained on [DDPG](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Pendulum/DDPG).
+
 ## Specifications [2]
 
 ### Description
