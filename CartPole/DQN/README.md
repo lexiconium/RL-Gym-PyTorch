@@ -10,7 +10,7 @@ Q-learning algorithm proposed by DeepMind Technologies [1].
 
 ![result](assets/result.png)
 
-## Reference
+## References
 
 [1] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra & Martin
 Riedmiller (2013). \
