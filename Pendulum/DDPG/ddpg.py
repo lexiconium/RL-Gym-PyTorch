@@ -154,8 +154,8 @@ def deep_deterministic_policy_gradient(
 
             estimate = critic(states, actions).flatten()
             with no_grad():
-                td_target = rewards + gamma * (1 - dones) * target_critic(next_states,
-                                                                          target_actor(next_states)).flatten()
+                next_values = target_critic(next_states, target_actor(next_states)).flatten()
+                td_target = rewards + gamma * (1 - dones) * next_values
             critic_loss = F.mse_loss(estimate, td_target)
 
             critic_optimizer.zero_grad()

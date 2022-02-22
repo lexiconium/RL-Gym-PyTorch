@@ -95,6 +95,7 @@ class Actor(nn.Module, UtilsMixin):
 def twin_delayed_deep_deterministic_policy_gradient(
     gamma: float = 0.99,
     tau: float = 0.005,
+    exploration_noise: float = 0.1,
     policy_noise: float = 0.2,
     noise_clip: float = 0.5,
     num_episodes: int = 3000,
@@ -127,7 +128,9 @@ def twin_delayed_deep_deterministic_policy_gradient(
         for _ in count(1):
             if len(replay_buffer) > start_timestep:
                 with no_grad():
-                    action = np.clip(actor(state).numpy() + np.random.normal(loc=0, scale=0.2, size=2), -1, 1)
+                    action = np.clip(
+                        actor(state).numpy() + np.random.normal(loc=0, scale=exploration_noise, size=2), -1, 1
+                    )
             else:
                 action = env.action_space.sample()
 
@@ -159,7 +162,11 @@ def twin_delayed_deep_deterministic_policy_gradient(
             q1, q2 = critic(states, actions)
 
             with no_grad():
-                noise = torch.randn_like(actions * policy_noise).clamp(-noise_clip, noise_clip)
+                noise = torch.clamp(
+                    torch.normal(mean=0, std=policy_noise, size=(2,)),
+                    -noise_clip,
+                    noise_clip
+                )
                 next_actions = (target_actor(next_states) + noise).clamp(-1, 1)
                 next_q1, next_q2 = target_critic(next_states, next_actions)
             td_target = rewards + gamma * (1 - dones) * torch.min(next_q1, next_q2)
@@ -198,6 +205,7 @@ if __name__ == "__main__":
     policy, acc_rewards = twin_delayed_deep_deterministic_policy_gradient(
         gamma=0.99,
         tau=0.005,
+        exploration_noise=0.1,
         policy_noise=0.2,
         noise_clip=0.5,
         num_episodes=3000,
