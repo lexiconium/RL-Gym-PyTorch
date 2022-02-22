@@ -2,6 +2,8 @@
 
 ## Overview
 
+https://user-images.githubusercontent.com/84180121/155066188-6066eb6b-a2a8-4699-a77a-954d731386bc.mp4
+
 ## Specifications [2]
 
 ### Observation Space
