@@ -128,5 +128,5 @@ env = gym.make('Walker2d-v3', ctrl_cost_weight=0.1, ....)
 
 ## References
 
-[1] https://gym.openai.com/envs/Walker2d-v2/
+[1] https://gym.openai.com/envs/Walker2d-v2 \
 [2] https://github.com/openai/gym/blob/master/gym/envs/mujoco/walker2d_v3.py
