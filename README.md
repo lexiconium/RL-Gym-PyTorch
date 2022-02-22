@@ -28,9 +28,6 @@ Each directory contains:
     - [TD3 (Continuous)](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/LunarLander/Continuous/TD3)
 - [MountainCarContinuous-v0](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/MountainCarContinuous)
     - [DDPG](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/MountainCarContinuous/DDPG)
-
-### TBA
-
 - [Walker2d](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Walker2d)
     - [TD3](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Walker2d/TD3)
 
