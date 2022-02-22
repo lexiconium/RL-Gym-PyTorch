@@ -2,6 +2,8 @@
 
 ## Overview
 
+https://user-images.githubusercontent.com/84180121/155177377-670ea09d-21d8-4eae-bd8f-a7c5c84d6d23.mp4
+
 Trained on [TD3](https://github.com/lexiconium/RL-Gym-PyTorch/tree/main/Walker2d/TD3).
 
 ## Specifications [2]
