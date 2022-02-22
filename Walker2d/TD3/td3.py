@@ -219,98 +219,36 @@ def twin_delayed_deep_deterministic_policy_gradient(
 
         acc_rewards.append(acc_reward)
         if episode % 100 == 0:
-            print(
-                f"episode: {episode}\n"
-                f"avg. reward: {np.mean(acc_rewards[-100:])}\n"
-            )
+            print(f"avg. reward: {np.mean(acc_rewards[-100:])}\n")
 
     env.close()
 
     return target_actor, acc_rewards
 
 
-def wrapper(_):
-    return twin_delayed_deep_deterministic_policy_gradient(
+if __name__ == "__main__":
+    policy, acc_rewards = twin_delayed_deep_deterministic_policy_gradient(
         gamma=0.99,
         tau=0.005,
-        exploration_noise=0.1,
         policy_noise=0.2,
         noise_clip=0.5,
-        num_episodes=3500,
+        num_episodes=4000,
         batch_size=256,
         start_timestep=25000,
         update_frequency=2
     )
 
-
-if __name__ == "__main__":
-    # policy, acc_rewards = twin_delayed_deep_deterministic_policy_gradient(
-    #     gamma=0.99,
-    #     tau=0.005,
-    #     policy_noise=0.2,
-    #     noise_clip=0.5,
-    #     num_episodes=4000,
-    #     batch_size=256,
-    #     start_timestep=25000,
-    #     update_frequency=2
-    # )
-    #
-    # from gym.wrappers import Monitor
-    #
-    # env = Monitor(gym.make("Walker2d-v2"), directory="./output", force=True)
-    # state = env.reset()
-    # done = False
-    # while not done:
-    #     env.render()
-    #     with no_grad():
-    #         action = policy(state).numpy()
-    #     state, _, done, _ = env.step(action)
-    #
-    #     if done:
-    #         env.close()
-    #         break
-
-    # from multiprocessing import get_context
-    #
-    # with get_context("spawn").Pool(5) as pool:
-    #     results = pool.map(wrapper, range(5))
-
-    rewards = {}
-    policies = []
-    for n in range(5):
-        policy, acc_rewards = twin_delayed_deep_deterministic_policy_gradient(
-            gamma=0.99,
-            tau=0.005,
-            exploration_noise=0.1,
-            policy_noise=0.2,
-            noise_clip=0.5,
-            num_episodes=3500,
-            batch_size=256,
-            start_timestep=25000,
-            update_frequency=2
-        )
-        policies.append(policy)
-        rewards[n] = acc_rewards
-
-
-    import json
-
-    with open("rewards.json", "w") as f:
-        # acc_rewards = {n: result[1] for n, result in enumerate(results)}
-        json.dump(rewards, f)
-
     from gym.wrappers import Monitor
 
-    for n, policy in enumerate(policies):
-        env = Monitor(gym.make("Walker2d-v2"), directory=f"./output/{n}", force=True)
-        state = env.reset()
-        done = False
-        while not done:
-            env.render()
-            with no_grad():
-                action = policy(state).numpy()
-            state, _, done, _ = env.step(action)
+    env = Monitor(gym.make("Walker2d-v2"), directory="./output", force=True)
+    state = env.reset()
+    done = False
+    while not done:
+        env.render()
+        with no_grad():
+            action = policy(state).numpy()
+        state, _, done, _ = env.step(action)
 
-            if done:
-                env.close()
-                break
+        if done:
+            env.close()
+            break
