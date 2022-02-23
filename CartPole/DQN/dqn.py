@@ -129,29 +129,12 @@ def deep_q_learning(
 
 
 if __name__ == "__main__":
-    # policy, acc_rewards = deep_q_learning(
-    #     gamma=0.99,
-    #     num_episodes=5000,
-    #     batch_size=64,
-    #     target_update_interval=10
-    # )
-
-    data = {}
-
-    for n in range(5):
-        policy, acc_rewards = deep_q_learning(
-            gamma=0.99,
-            num_episodes=5000,
-            batch_size=64,
-            target_update_interval=10
-        )
-        data[n] = acc_rewards
-
-    import json
-
-    with open("rewards.json", "w") as f:
-        json.dump(data, f)
-
+    policy, acc_rewards = deep_q_learning(
+        gamma=0.99,
+        num_episodes=5000,
+        batch_size=64,
+        target_update_interval=10
+    )
     policy.eval()
 
     from gym.wrappers import Monitor
