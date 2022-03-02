@@ -104,7 +104,7 @@ def deep_q_learning(
             dones = torch.as_tensor(transition.done).long()
 
             estimate = torch.gather(policy(transition.state), dim=-1, index=actions).squeeze(dim=-1)
-            td_target = rewards + (1 - dones) * gamma * policy(transition.next_state).max(dim=-1)[0]
+            td_target = rewards + (1 - dones) * gamma * target_policy(transition.next_state).max(dim=-1)[0]
             loss = F.mse_loss(estimate, td_target)
 
             optimizer.zero_grad()
@@ -129,29 +129,12 @@ def deep_q_learning(
 
 
 if __name__ == "__main__":
-    # policy, acc_rewards = deep_q_learning(
-    #     gamma=0.99,
-    #     num_episodes=5000,
-    #     batch_size=64,
-    #     target_update_interval=10
-    # )
-
-    data = {}
-
-    for n in range(5):
-        policy, acc_rewards = deep_q_learning(
-            gamma=0.99,
-            num_episodes=5000,
-            batch_size=64,
-            target_update_interval=10
-        )
-        data[n] = acc_rewards
-
-    import json
-
-    with open("rewards.json", "w") as f:
-        json.dump(data, f)
-
+    policy, acc_rewards = deep_q_learning(
+        gamma=0.99,
+        num_episodes=5000,
+        batch_size=64,
+        target_update_interval=5
+    )
     policy.eval()
 
     from gym.wrappers import Monitor
