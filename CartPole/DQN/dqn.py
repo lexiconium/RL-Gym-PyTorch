@@ -104,7 +104,7 @@ def deep_q_learning(
             dones = torch.as_tensor(transition.done).long()
 
             estimate = torch.gather(policy(transition.state), dim=-1, index=actions).squeeze(dim=-1)
-            td_target = rewards + (1 - dones) * gamma * policy(transition.next_state).max(dim=-1)[0]
+            td_target = rewards + (1 - dones) * gamma * target_policy(transition.next_state).max(dim=-1)[0]
             loss = F.mse_loss(estimate, td_target)
 
             optimizer.zero_grad()
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         gamma=0.99,
         num_episodes=5000,
         batch_size=64,
-        target_update_interval=10
+        target_update_interval=5
     )
     policy.eval()
 
