@@ -57,7 +57,7 @@ class DQN(nn.Module):
         return self(state).argmax().item()
 
 
-def deep_q_learning(
+def double_deep_q_learning(
     gamma: float = 0.99,
     num_episodes: int = 5000,
     batch_size: int = 64,
@@ -103,8 +103,14 @@ def deep_q_learning(
             rewards = torch.as_tensor(transition.reward).float()
             dones = torch.as_tensor(transition.done).long()
 
-            estimate = torch.gather(policy(transition.state), dim=-1, index=actions).squeeze(dim=-1)
-            td_target = rewards + (1 - dones) * gamma * target_policy(transition.next_state).max(dim=-1)[0]
+            _values = policy(transition.state)
+            estimate = torch.gather(_values, dim=-1, index=actions).squeeze(dim=-1)
+
+            _actions = _values.argmax(dim=-1).unsqueeze(dim=-1)
+            td_target = rewards + (1 - dones) * gamma * torch.gather(
+                target_policy(transition.next_state), dim=-1,
+                index=_actions
+            ).squeeze(dim=-1)
             loss = F.mse_loss(estimate, td_target)
 
             optimizer.zero_grad()
@@ -130,7 +136,7 @@ def deep_q_learning(
 
 
 if __name__ == "__main__":
-    policy, acc_rewards = deep_q_learning(
+    policy, acc_rewards = double_deep_q_learning(
         gamma=0.99,
         num_episodes=5000,
         batch_size=64,
