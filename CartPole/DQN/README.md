@@ -8,7 +8,10 @@ Q-learning algorithm proposed by DeepMind Technologies [1].
 
 ## Result
 
-![result](assets/result.png)
+![dqn_result](assets/rlox_dqn_result.png)
+![double_dqn_result](assets/rlox_double_dqn_result.png)
+![ddqn_result](assets/rlox_dueling_dqn_result.png)
+![dddqn_result](assets/rlox_double_dueling_dqn_result.png)
 
 ## References
 
