@@ -40,35 +40,43 @@ def in_torch(fn):
     return convert_and_execute
 
 
-class FrameStackedEnv:
-    def __init__(self, env: gym.Env, num_stack: int = 4):
+class FrameSkipStackedEnv:
+    def __init__(self, env: gym.Env, num_skip: int = 4, num_stack: int = 4):
         self.env = env
+        self.num_skip = num_skip
         self.num_stack = num_stack
         self.frames = None
+        self.frame_buffer = deque(maxlen=num_skip)
 
-    def _process(self, observation: np.ndarray):
+    @staticmethod
+    def _process(observation: np.ndarray):
         observation = color.rgb2gray(observation)
         observation = transform.resize(observation, (84, 84))
         return observation
 
     def reset(self):
-        observation = self.env.reset()
+        observation = self._process(self.env.reset())
         self.frames = deque(
-            [self._process(observation) for _ in range(self.num_stack)],
+            [observation for _ in range(self.num_stack)],
             maxlen=self.num_stack
         )
         return np.stack(list(self.frames), axis=0)
 
-    @in_numpy
-    def step(self, action: np.ndarray):
+    def skip_step(self, action: np.ndarray):
+        action = action.item()
         reward = 0
-        for _ in range(self.num_stack):
-            observation, _reward, done, info = self.env.step(action.item())
+        for _ in range(self.num_skip):
+            observation, _reward, done, info = self.env.step(action)
+            self.frame_buffer.append(self._process(observation))
             reward += _reward
-            self.frames.append(self._process(observation))
             if done:
                 break
+        return np.max(list(self.frame_buffer), axis=0), reward, done, info
 
+    @in_numpy
+    def step(self, action: np.ndarray):
+        observation, reward, done, info = self.skip_step(action)
+        self.frames.append(observation)
         return np.stack(list(self.frames), axis=0), reward, done, info
 
     @property
@@ -210,14 +218,20 @@ class PPOLog:
         for key, value in kwargs.items():
             getattr(self, key).append(value)
 
+    @property
+    def avg_ep_reward(self):
+        return np.mean(self.episode_rewards[-100:])
+
     def __repr__(self):
-        return (
-            f"Episode: {self.episode - 1}\n"
-            f"+ Avg. Episode Reward: {np.mean(self.episode_rewards[-100:]):.2f}\n"
-            f"+ Avg. PPO Loss: {np.mean(self.ppo_loss[-100:]):.4f}\n"
-            f"+ Avg. Value Loss: {np.mean(self.value_loss[-100:]):.4f}\n"
-            f"+ Avg. Entropy: {np.mean(self.entropy[-100:]):.4f}\n"
-        )
+        if self.ppo_loss:
+            return (
+                f"Episode: {self.episode - 1}\n"
+                f"+ Avg. Episode Reward: {np.mean(self.episode_rewards[-100:]):.2f}\n"
+                f"+ Avg. PPO Loss: {np.mean(self.ppo_loss[-100:]):.4f}\n"
+                f"+ Avg. Value Loss: {np.mean(self.value_loss[-100:]):.4f}\n"
+                f"+ Avg. Entropy: {np.mean(self.entropy[-100:]):.4f}\n"
+            )
+        return "At least one training loop has to be done before printing the results."
 
 
 def proximal_policy_optimization(
@@ -225,16 +239,17 @@ def proximal_policy_optimization(
     gamma: float = 0.99,
     lambda_gae: float = 0.95,
     clip_range: float = 0.2,
-    c_vf: float = 1,
+    c_vf: float = 0.5,
     c_entropy: float = 0.01,
     learning_rate: float = 3e-4,
     horizon: int = 2048,
-    num_iterations: int = 100,
+    num_iterations: int = 2000,
     num_epochs: int = 10,
-    batch_size: int = 64
+    batch_size: int = 64,
+    max_grad_norm: float = 0.5,
 ):
     env = gym.make("PongNoFrameskip-v4")
-    env = FrameStackedEnv(env, num_stack=num_stack)
+    env = FrameSkipStackedEnv(env, num_stack=num_stack)
     num_actions = env.num_actions
 
     rollout_buffer = RolloutBuffer()
@@ -244,7 +259,7 @@ def proximal_policy_optimization(
     log = PPOLog()
 
     observation = env.reset()
-    for iteration in range(num_iterations):
+    for iteration in range(1, num_iterations + 1):
         for t in range(horizon):
             with torch.no_grad():
                 log_prob, value = policy(observation)
@@ -308,7 +323,7 @@ def proximal_policy_optimization(
 
                 optimizer.zero_grad()
                 loss.backward()
-                nn.utils.clip_grad_norm_(policy.parameters(), 0.5)
+                nn.utils.clip_grad_norm_(policy.parameters(), max_grad_norm)
                 optimizer.step()
 
         rollout_buffer.reset()
@@ -317,4 +332,4 @@ def proximal_policy_optimization(
 
 
 if __name__ == "__main__":
-    policy, log = proximal_policy_optimization(c_vf=0.5)
+    policy, log = proximal_policy_optimization()
